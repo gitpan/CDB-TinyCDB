@@ -6,7 +6,7 @@ BEGIN {
     }
 }
 
-use Test::More tests => 1 + 1 + 303 * 2;
+use Test::More tests => 1 + 1 + 308 * 2;
 use Test::Exception;
 use Test::NoWarnings;
 
@@ -177,6 +177,24 @@ for my $method ( qw( open load ) ) {
     );
 
     is(
+        $cdb->put_add( nulls => chr(0) x 10 ), 1,
+        "put_add() adds null strings fine"
+    );
+    {
+        my $warning;
+        local $SIG{__WARN__} = sub {
+            $warning = shift;
+        };
+        my $res = $cdb->put_add( undefs => undef );
+        like( $warning, qr/Use of uninitialized value in subroutine entry/,
+            "put_add() warns about uninitialized value,"
+           ."but adds them anyway as empty string" 
+        );
+
+        is( $res, 1, "put_add() adds undef values fine");
+    }
+
+    is(
         $cdb->put_insert(
             that_cant_exist_before => 'inserted record',
         ), 1,
@@ -294,9 +312,9 @@ for my $method ( qw( open load ) ) {
         [ sort ( $cdb->keys ) ], [ sort ( keys %cdb, keys %cdb_dups ) ],
         "keys() returns old and new records"
     );
-
     while ( my ($k, $v) = $cdb->each ) {
-        is( delete $cdb{$k} || delete $cdb_dups{$k}, $v,
+        my $val = exists $cdb{$k} ? delete $cdb{$k} : delete $cdb_dups{$k};
+        is( $val, $v,
             "each() returns correct value for $k"
         );
     }
@@ -323,6 +341,8 @@ sub cdb_values {
         binary_file => $binary_data,
         binary_data => $binary_data,
         new => 'value',
+        nulls => chr(0) x 10,
+        undefs => '',
         new_key1 => 'new_value1',
         new_key2 => 'new_value2',
         new_key3 => 'new_value3',

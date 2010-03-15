@@ -1,5 +1,9 @@
 Revision history for Perl extension CDB::TinyCDB.
 
+0.05  Mon Mar 15 13:46:08 2010
+    - Performance improvements
+    - Fixes for handling null data + tests
+
 0.04  Fri Mar 12 09:27:20 2010
     - Rename of the module fron CDB::Tiny to CDB::TinyCDB to avoid confusion
       that this module is tiny
